@@ -277,9 +277,57 @@
     .item:hover { box-shadow: var(--shadow-warm); border-color: var(--sand-dark); }
     .item .top { display: flex; justify-content: space-between; gap: 10px; }
     .item-title { font-weight: 700; font-size: 15px; color: var(--earth); }
+    .item-name  { font-size: 14px; font-weight: 700; color: var(--earth); margin-bottom: 3px; }
     .item-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
     .item-detail { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
     .item-id { font-size: 11px; color: var(--sand-dark); margin-top: 8px; }
+
+    /* ── CARD DE PEDIDO — seções internas ── */
+    .item-section {
+      margin-top: 10px;
+    }
+    .item-section-row {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;
+    }
+    .item-section-label {
+      display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      color: var(--earth-light); text-transform: uppercase; margin-bottom: 6px;
+    }
+
+    /* chips de necessidades dentro do card */
+    .item-needs-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .need-chip {
+      background: #FFF0E8; border: 1px solid #F0C4AB;
+      color: var(--clay-dark); font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+    }
+    .need-chip.muted-chip {
+      background: var(--cream); border-color: var(--border); color: var(--text-muted);
+    }
+
+    /* badge de entrega */
+    .item-info-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700;
+      padding: 5px 12px; border-radius: 999px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .delivery-badge {
+      background: #EFF6FB; border: 1px solid #93C5FD; color: #1e40af;
+    }
+
+    /* caixa de detalhes */
+    .item-detail-box {
+      flex: 1; min-width: 0;
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 8px 12px;
+    }
+    .item-detail-text {
+      display: block; font-size: 13px; color: var(--text-muted);
+      line-height: 1.5; margin-top: 2px;
+    }
 
     .tag {
       font-size: 11px; font-weight: 700; letter-spacing: .04em;
@@ -302,31 +350,60 @@
 
     /* ── POINTS MATRIX (horizontal scroll) ── */
     .points-matrix-wrap { margin-bottom: 4px; }
+
+    /* Grade responsiva: 1 col mobile → 2 col tablet → 3 col desktop */
     .points-matrix {
-      --pm-rows: 1;
-      display: grid; grid-auto-flow: column;
-      grid-template-rows: repeat(var(--pm-rows), auto);
-      align-content: start; gap: 12px;
-      overflow-x: auto; overflow-y: hidden;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
       padding: 4px 2px 10px;
-      scroll-snap-type: x proximity;
     }
-    @media (min-width: 720px)  { .points-matrix { --pm-rows: 2; } }
-    @media (min-width: 1024px) { .points-matrix { --pm-rows: 3; } }
-    .points-matrix::-webkit-scrollbar { height: 6px; }
-    .points-matrix::-webkit-scrollbar-track { background: transparent; }
-    .points-matrix::-webkit-scrollbar-thumb { background: var(--sand-dark); border-radius: 99px; }
 
     .point-card {
-      width: clamp(220px, 78vw, 280px);
-      border: 1px solid var(--border); border-radius: 14px; padding: 12px;
+      display: flex; flex-direction: column;
+      border: 1px solid var(--border); border-radius: 16px; padding: 16px;
       background: var(--warm-white); box-shadow: var(--shadow-card);
-      scroll-snap-align: start;
+      transition: box-shadow .15s, border-color .15s;
     }
-    .point-card .pt-name { font-weight: 800; margin-bottom: 4px; }
-    .point-card .pt-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-    .point-card .pt-items { font-size: 12px; color: var(--text-muted); }
-    .point-card .pt-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .point-card:hover { box-shadow: var(--shadow-warm); border-color: var(--sand-dark); }
+
+    .point-card .pt-header {
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
+    }
+    .point-card .pt-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--sky); flex-shrink: 0; margin-top: 5px;
+      box-shadow: 0 0 0 3px rgba(74,124,158,.15);
+    }
+    .point-card .pt-name {
+      font-family: 'Lora', serif; font-weight: 700; font-size: 15px;
+      color: var(--earth); line-height: 1.3;
+    }
+
+    .point-card .pt-divider {
+      height: 1px; background: var(--border); margin: 8px 0;
+    }
+
+    .point-card .pt-meta {
+      font-size: 12px; color: var(--text-muted);
+      margin-bottom: 4px; line-height: 1.4;
+    }
+    .point-card .pt-items {
+      font-size: 12px; color: var(--earth-light);
+      font-weight: 600; margin-top: 6px; line-height: 1.4;
+    }
+    .point-card .pt-extra {
+      margin-top: 8px; display: flex; flex-direction: column; gap: 3px;
+    }
+    .point-card .pt-extra-row {
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* empurra as ações para o final do card */
+    .point-card .pt-actions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-top: auto; padding-top: 12px;
+    }
     .point-card .pt-actions .pill { padding: 7px 10px; font-size: 12px; }
 
     /* ── URGENCY ── */
@@ -408,7 +485,7 @@
         <div class="pulse-dot"></div>
         Ativo agora — Juiz de Fora, MG
       </div>
-      <h1>Juntos pelas famílias atingidas pelas <em>chuvas em JF</em></h1>
+      <h1>Juntos pelas famílias atingidas pelas <em>chuvas em JF e Região</em></h1>
       <p class="hero-desc">Faça check-in com o que você precisa. Voluntários e doadores encontram você pelo mapa. Simples, rápido, solidário.</p>
       <div class="hero-actions">
         <button class="btn primary" onclick="document.querySelector('#checkin').scrollIntoView({behavior:'smooth'})">🙏 Preciso de ajuda</button>
@@ -489,7 +566,13 @@
             <input name="neighborhood" placeholder="Ex.: Centro">
 
             <label>Endereço completo <span style="color:var(--clay)">*</span></label>
-            <input name="address" required placeholder="Rua, número, bairro — Juiz de Fora/MG">
+            <input name="address" id="req_address" required placeholder="Rua, número, bairro — Juiz de Fora/MG">
+
+            <label class="geo-checkbox-label" style="margin-top:10px;flex-direction:row;align-items:center;gap:8px;display:flex;cursor:pointer;font-weight:500;color:var(--text-muted)">
+              <input type="checkbox" id="useGeoAddress" style="width:auto;accent-color:var(--clay)">
+              Preencher automaticamente com minha localização atual
+            </label>
+            <div class="small-text" id="geoAddrStatus" style="margin-top:4px;min-height:16px"></div>
           </div>
         </div>
 
@@ -571,7 +654,7 @@
       <!-- pontos existentes em matriz horizontal -->
       <div class="points-matrix-wrap">
         <div class="points-matrix" id="pointsMatrix" aria-label="Lista de pontos de doação"></div>
-        <div class="small-text" style="margin-top:6px">Deslize para o lado para ver todos os pontos.</div>
+
         <div class="hr" style="margin:14px 0"></div>
       </div>
 
@@ -673,7 +756,7 @@
       <div class="logo-heart">🤝</div>
       AjudaJF
     </div>
-    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Dados via Google Sheets • Use com responsabilidade.</p>
+    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Use com responsabilidade.</p>
     <div class="small-text">Desenvolvido por <a href="https://www.linkedin.com/in/jonathan-coelho-06a91014b/" target="_blank" rel="noopener" style="text-decoration:underline">Jonathan Coelho</a></div>
   </div>
 </footer>
@@ -896,23 +979,59 @@
     }
 
     filteredReq.forEach(r => {
-      const tagClass = r.status === "open" ? "open" : "done"; // closed also maps to "done" CSS class
-      const addrLine = [r.address, r.neighborhood].filter(Boolean).join(" — ") || "Localização informada";
+      const tagClass  = r.status === "open" ? "open" : "done";
+      const addrLine  = [r.address, r.neighborhood].filter(Boolean).join(" — ") || "Localização informada";
+      // Mapeia keys das necessidades para labels legíveis
+      const NEEDS_LABEL = {
+        agua:"💧 Água", alimentos:"🥫 Alimentos", pronto:"🍱 Alimento pronto",
+        roupas:"👕 Roupas", cobertor:"🛏 Cobertores", higiene:"🧴 Higiene",
+        fraldas:"👶 Fraldas", remedios:"💊 Remédios", pets:"🐾 Pets"
+      };
+      const needsList = (r.needs || []).map(k => escapeHtml(NEEDS_LABEL[k] || k));
+      const delivery  = r.delivery_needed;
+      const details   = r.details ? escapeHtml(r.details) : "";
       const div = document.createElement("div");
       div.className = "item";
       div.innerHTML = `
+        <!-- cabeçalho: status + nome + localização -->
         <div class="top">
-          <div>
-            <div class="item-title">${(r.needs || []).slice(0, 3).map(escapeHtml).join(" · ") || "Pedido"}</div>
-            <div class="item-sub">📍 ${escapeHtml(addrLine)}</div>
+          <div style="flex:1;min-width:0">
+            ${r.name ? `<div class="item-name">👤 ${escapeHtml(r.name)}</div>` : ""}
+            <div class="item-sub" style="margin-bottom:6px">📍 ${escapeHtml(addrLine)}</div>
           </div>
           <div class="tag ${tagClass}">${r.status === "open" ? "ABERTO" : "ATENDIDO"}</div>
         </div>
-        <div class="item-detail">${r.details ? escapeHtml(r.details) : ""}</div>
+
+        <!-- o que precisa -->
+        <div class="item-section">
+          <div class="item-section-label">🛒 O que precisa</div>
+          <div class="item-needs-chips">
+            ${needsList.length
+              ? needsList.map(n => `<span class="need-chip">${n}</span>`).join("")
+              : `<span class="need-chip muted-chip">Não especificado</span>`
+            }
+          </div>
+        </div>
+
+        <!-- entrega + detalhes (só renderiza se tiver conteúdo) -->
+        ${delivery || details ? `
+        <div class="item-section item-section-row">
+          ${delivery ? `
+          <div class="item-info-badge delivery-badge">
+            🚚 Precisa de entrega
+          </div>` : ""}
+          ${details ? `
+          <div class="item-detail-box">
+            <span class="item-section-label">📝 Detalhes</span>
+            <span class="item-detail-text">${details}</span>
+          </div>` : ""}
+        </div>` : ""}
+
+        <!-- ações -->
         <div class="actions">
           <a class="pill" href="https://wa.me/55${escapeHtml(r.phone)}" target="_blank" rel="noopener">💬 WhatsApp</a>
-          <button class="pill" onclick="copyText('${escapeHtml(r.phone)}')">📋 Copiar telefone</button>
-          <button class="pill" onclick="copyRequestAddress('${escapeHtml(r.id)}')">📋 Copiar endereço</button>
+          <button class="pill" onclick="copyText('${escapeHtml(r.phone)}')">📋 Telefone</button>
+          <button class="pill" onclick="copyRequestAddress('${escapeHtml(r.id)}')">📋 Endereço</button>
           ${routeLink(r)}
           ${markDoneButton(r)}
         </div>
@@ -940,16 +1059,32 @@
         p.notes   ? `📝 ${escapeHtml(p.notes)}`   : ""
       ].filter(Boolean).join("<br>");
 
+      // Separa extra em campos individuais para HTML mais limpo
+      const extraRows = [
+        p.hours   ? `<div class="pt-extra-row">⏰ ${escapeHtml(p.hours)}</div>`   : "",
+        p.contact ? `<div class="pt-extra-row">📞 ${escapeHtml(p.contact)}</div>` : "",
+        p.notes   ? `<div class="pt-extra-row">📝 ${escapeHtml(p.notes)}</div>`   : ""
+      ].filter(Boolean).join("");
+
       const div = document.createElement("div");
       div.className = "point-card";
       div.innerHTML = `
-        <div class="pt-name">🔵 ${escapeHtml(p.name)}</div>
+        <div class="pt-header">
+          <div class="pt-dot"></div>
+          <div class="pt-name">${escapeHtml(p.name)}</div>
+        </div>
+
         <div class="pt-meta">📍 ${escapeHtml(meta || "Endereço informado")}</div>
+
+        <div class="pt-divider"></div>
+
         <div class="pt-items">Aceita: ${escapeHtml(items || "—")}</div>
-        ${extra ? `<div class="pt-meta" style="margin-top:8px">${extra}</div>` : ""}
+
+        ${extraRows ? `<div class="pt-extra">${extraRows}</div>` : ""}
+
         <div class="pt-actions">
           <a class="pill" href="https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}" target="_blank" rel="noopener">🗺 Rota</a>
-          <button class="pill" onclick="copyText('${escapeHtml((p.address || "") + " - " + (p.neighborhood || ""))}')">📋 Copiar</button>
+          <button class="pill" onclick="copyText('${escapeHtml((p.address || "") + " - " + (p.neighborhood || ""))}')">📋 Copiar endereço</button>
         </div>`;
       el.appendChild(div);
     });
@@ -1086,6 +1221,94 @@
     $("#req_id").value = uid();
     $("#pt_id").value  = uid();
 
+    /* --- checkbox: preencher endereço com geolocalização --- */
+    const geoChk    = $("#useGeoAddress");
+    const addrInput = $("#req_address");
+    const geoStatus = $("#geoAddrStatus");
+
+    if (geoChk) {
+      geoChk.addEventListener("change", () => {
+        if (!geoChk.checked) {
+          // desmarcou: limpa status, restaura campo editável
+          geoStatus.textContent = "";
+          addrInput.readOnly = false;
+          addrInput.value = "";
+          addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+          $("#req_lat").value = "";
+          $("#req_lng").value = "";
+          $("#req_precision").value = "manual";
+          return;
+        }
+
+        if (!navigator.geolocation) {
+          geoChk.checked = false;
+          geoStatus.textContent = "⚠️ Geolocalização não disponível neste dispositivo.";
+          return;
+        }
+
+        geoStatus.textContent = "📡 Obtendo localização...";
+        addrInput.readOnly = true;
+        addrInput.value = "";
+        addrInput.placeholder = "Aguardando GPS...";
+
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const lat = round3(pos.coords.latitude);
+            const lng = round3(pos.coords.longitude);
+
+            // Salva coordenadas
+            $("#req_lat").value = lat;
+            $("#req_lng").value = lng;
+            $("#req_precision").value = "gps";
+
+            // Faz geocodificação reversa para preencher o campo de endereço
+            geoStatus.textContent = "🔍 Convertendo coordenadas para endereço...";
+            try {
+              const url = "https://nominatim.openstreetmap.org/reverse?format=json&lat="
+                + lat + "&lon=" + lng + "&accept-language=pt-BR";
+              const resp = await fetch(url);
+              if (!resp.ok) throw new Error("Falha na geocodificação reversa");
+              const data = await resp.json();
+
+              const addr = data.address || {};
+              // Monta endereço legível a partir dos componentes
+              const parts = [
+                addr.road || addr.pedestrian || addr.footway || "",
+                addr.house_number || "",
+                addr.suburb || addr.neighbourhood || addr.city_district || "",
+                addr.city || addr.town || addr.village || "Juiz de Fora"
+              ].filter(Boolean);
+
+              const enderecoFormatado = parts.join(", ") || data.display_name || "";
+              addrInput.value = enderecoFormatado;
+              addrInput.readOnly = false; // permite editar se necessário
+              geoStatus.textContent = "✅ Localização preenchida — edite se necessário.";
+            } catch {
+              // Se a geocodificação reversa falhar, mantém coordenadas e
+              // permite que o usuário escreva o endereço manualmente
+              addrInput.value = "";
+              addrInput.readOnly = false;
+              addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+              geoStatus.textContent = "✅ GPS capturado. Preencha o endereço manualmente.";
+            }
+          },
+          (err) => {
+            geoChk.checked = false;
+            addrInput.readOnly = false;
+            addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+            const msg = err.code === 1
+              ? "Permissão de localização negada."
+              : "Não foi possível obter a localização.";
+            geoStatus.textContent = "⚠️ " + msg;
+            $("#req_lat").value = "";
+            $("#req_lng").value = "";
+            $("#req_precision").value = "manual";
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+
     /* --- pedido de ajuda --- */
     $("#formRequest").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -1159,6 +1382,13 @@
         $("#req_lng").value = "";
         $("#req_precision").value = "manual";
         $("#req_id").value = uid();
+        // reset checkbox de geolocalização
+        const geoChk = $("#useGeoAddress");
+        if (geoChk) geoChk.checked = false;
+        const geoStatus = $("#geoAddrStatus");
+        if (geoStatus) geoStatus.textContent = "";
+        const addrInput = $("#req_address");
+        if (addrInput) { addrInput.readOnly = false; addrInput.value = ""; }
       } else if (lastSubmitted === "point") {
         $("#ptMsg").textContent = "Enviado ✅ (atualizando...)";
         setTimeout(() => { $("#ptMsg").textContent = ""; }, 4500);
