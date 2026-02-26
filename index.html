@@ -472,8 +472,12 @@
       <a href="#mapa">Mapa</a>
       <a href="#pontos">Pontos de doação</a>
       <a href="#como-ajudar">Como ajudar</a>
+      <a href="voluntarios.html" style="color:var(--moss);font-weight:600">🙋 Voluntários</a>
     </nav>
-    <button class="btn" onclick="document.querySelector('#mapa').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
+    <div style="display:flex;gap:8px">
+      <a href="voluntarios.html" class="btn" style="border-color:var(--moss);color:var(--moss)">🙋 Voluntários</a>
+      <button class="btn" onclick="document.querySelector('#mapa').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
+    </div>
   </div>
 </header>
 
@@ -485,11 +489,12 @@
         <div class="pulse-dot"></div>
         Ativo agora — Juiz de Fora, MG
       </div>
-      <h1>Juntos pelas famílias atingidas pelas <em>chuvas em JF e Região</em></h1>
+      <h1>Juntos pelas famílias atingidas pelas <em>chuvas em JF</em></h1>
       <p class="hero-desc">Faça check-in com o que você precisa. Voluntários e doadores encontram você pelo mapa. Simples, rápido, solidário.</p>
       <div class="hero-actions">
         <button class="btn primary" onclick="document.querySelector('#checkin').scrollIntoView({behavior:'smooth'})">🙏 Preciso de ajuda</button>
         <button class="btn" onclick="document.querySelector('#pontos').scrollIntoView({behavior:'smooth'})">❤️ Quero ajudar</button>
+        <a href="voluntarios.html" class="btn" style="border-color:var(--moss);color:var(--moss);background:var(--moss-light)">🙋 Sou voluntário</a>
         <button class="btn" onclick="refreshAll(true)">↻ Atualizar dados</button>
       </div>
       <div class="notice-box">
@@ -741,7 +746,10 @@
       </div>
 
       <div class="row" style="margin-top:20px">
-        <button class="btn" onclick="document.querySelector('#mapa').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
+        <div style="display:flex;gap:8px">
+      <a href="voluntarios.html" class="btn" style="border-color:var(--moss);color:var(--moss)">🙋 Voluntários</a>
+      <button class="btn" onclick="document.querySelector('#mapa').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
+    </div>
         <button class="btn primary" onclick="document.querySelector('#checkin').scrollIntoView({behavior:'smooth'})">🙏 Fazer check-in</button>
       </div>
     </div>
@@ -756,7 +764,8 @@
       <div class="logo-heart">🤝</div>
       AjudaJF
     </div>
-    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Use com responsabilidade.</p>
+    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Dados via Google Sheets • Use com responsabilidade.</p>
+    <a href="voluntarios.html" style="font-size:13px;color:var(--moss);font-weight:600;text-decoration:underline">🙋 Página de Voluntários</a>
     <div class="small-text">Desenvolvido por <a href="https://www.linkedin.com/in/jonathan-coelho-06a91014b/" target="_blank" rel="noopener" style="text-decoration:underline">Jonathan Coelho</a></div>
   </div>
 </footer>
@@ -779,7 +788,7 @@
          updateRequestStatus(e.parameter.id, e.parameter.status);
          return jsonpResponse(e.parameter.callback, { ok: true });
   ===================================================== */
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzVD4E76mNpXfhSoeRH3foybe8d90yeWCskLBWMDRumtVgMCTOxzmQzzmxpMtoZMuU/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwXjWoPo48vMVLNb_bccZsdhcQ9Rg260-xr_nzc6yZT5387dcTOqiv2wi5PHmoF03Dv/exec";
 
   /* =====================================================
      CONSTANTES

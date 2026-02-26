@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AjudaJF — Voluntários</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    /* ── TOKENS (idênticos ao index) ── */
+    :root {
+      --cream:        #FAF7F2;
+      --warm-white:   #FFFEFB;
+      --clay:         #C4714A;
+      --clay-light:   #E8956F;
+      --clay-dark:    #A05438;
+      --sand:         #E8DDD0;
+      --sand-dark:    #D4C5B2;
+      --earth:        #6B4F3A;
+      --earth-light:  #8C6F5A;
+      --sky:          #4A7C9E;
+      --sky-light:    #EFF6FB;
+      --moss:         #4A7A5C;
+      --moss-light:   #EBF5EF;
+      --moss-dark:    #345C42;
+      --text:         #2C1F17;
+      --text-muted:   #7A6155;
+      --border:       rgba(196,113,74,.15);
+      --shadow-warm:  0 4px 24px rgba(100,60,30,.08);
+      --shadow-card:  0 2px 16px rgba(100,60,30,.06), 0 1px 4px rgba(100,60,30,.04);
+      --radius:       20px;
+      --radius-sm:    12px;
+      /* acento desta página: verde musgo */
+      --accent:       var(--moss);
+      --accent-light: var(--moss-light);
+      --accent-dark:  var(--moss-dark);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--cream); color: var(--text);
+      min-height: 100vh; line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    section { padding: 40px 0; }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(250,247,242,.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: 1100px; margin: 0 auto; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Lora', serif; font-weight: 700;
+      font-size: 22px; color: var(--clay-dark); letter-spacing: -.02em;
+    }
+    .logo-heart {
+      width: 32px; height: 32px; background: var(--clay); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .links { display: flex; gap: 6px; }
+    .links a {
+      font-size: 14px; font-weight: 500; color: var(--text-muted);
+      padding: 7px 14px; border-radius: 999px;
+      transition: background .15s, color .15s;
+    }
+    .links a:hover { background: var(--sand); color: var(--clay-dark); }
+    .links a.active { color: var(--moss-dark); font-weight: 700; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 7px; padding: 10px 18px; border-radius: 999px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--sand-dark);
+      background: var(--warm-white); color: var(--earth);
+      transition: all .15s; white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--clay-light); color: var(--clay-dark); background: var(--sand); }
+    .btn.primary { background: var(--moss); color: #fff; border-color: var(--moss); }
+    .btn.primary:hover { background: var(--moss-dark); border-color: var(--moss-dark); }
+    .btn.secondary { background: var(--clay); color: #fff; border-color: var(--clay); }
+    .btn.secondary:hover { background: var(--clay-dark); border-color: var(--clay-dark); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── HERO ── */
+    .hero-section {
+      background: linear-gradient(165deg, #F0F7F2 0%, var(--cream) 60%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; padding: 56px 20px 48px;
+      display: grid; grid-template-columns: 1.3fr .7fr; gap: 24px; align-items: start;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--moss-light); border: 1px solid #A3D4B0;
+      color: var(--moss-dark); font-size: 13px; font-weight: 600;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .hero-badge .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--moss); animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .6; transform: scale(.85); }
+    }
+    h1 {
+      font-family: 'Lora', serif; font-weight: 700;
+      font-size: 40px; line-height: 1.15; letter-spacing: -.03em;
+      color: var(--earth); margin-bottom: 16px;
+    }
+    h1 em { color: var(--moss); font-style: italic; }
+    .hero-desc { font-size: 16px; color: var(--text-muted); margin-bottom: 28px; max-width: 500px; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .notice-box {
+      margin-top: 20px;
+      background: var(--moss-light); border: 1px solid #A3D4B0; border-left: 3px solid var(--moss);
+      border-radius: var(--radius-sm); padding: 12px 16px;
+      font-size: 13px; color: var(--moss-dark); line-height: 1.5;
+    }
+
+    /* ── SIDE CARD ── */
+    .side-card {
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 24px;
+    }
+    .stats { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .stat-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-muted); }
+    .stat-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .stat-icon.green  { background: var(--moss-light); }
+    .stat-icon.orange { background: #FFF0E8; }
+    .stat-icon.blue   { background: var(--sky-light); }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 28px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .section-icon {
+      width: 40px; height: 40px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      flex-shrink: 0;
+    }
+    .section-icon.green  { background: var(--moss-light); }
+    .section-icon.blue   { background: var(--sky-light); }
+    .section-icon.orange { background: #FFF0E8; }
+    .section-title-block h2 { margin-bottom: 2px; }
+    .section-title-block p { font-size: 14px; color: var(--text-muted); }
+
+    h2 {
+      font-family: 'Lora', serif; font-weight: 600; font-size: 22px;
+      color: var(--earth); margin-bottom: 8px; letter-spacing: -.02em;
+    }
+
+    /* ── DIVIDERS ── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .hr      { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── FORM ── */
+    label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--earth-light); margin: 16px 0 6px; letter-spacing: .01em;
+    }
+    input, textarea, select {
+      width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--sand-dark); font-family: 'DM Sans', sans-serif;
+      font-size: 15px; color: var(--text); background: #FFFEFB;
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--moss);
+      box-shadow: 0 0 0 3px rgba(74,122,92,.12);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .small-text { font-size: 12px; color: var(--text-muted); }
+
+    /* ── CHIPS (habilidades) ── */
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      border: 1.5px solid var(--sand-dark); padding: 8px 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      background: var(--warm-white); cursor: pointer; user-select: none;
+      transition: all .12s;
+    }
+    .chip:hover { border-color: var(--moss); color: var(--moss-dark); background: var(--moss-light); }
+    .chip.on { background: var(--moss); color: #fff; border-color: var(--moss); }
+
+    /* ── MAP AREA ── */
+    .map-controls {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin-bottom: 16px; padding: 14px 16px;
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .map-controls label {
+      margin: 0; display: flex; align-items: center; gap: 7px;
+      color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer;
+    }
+    .map-controls input[type="checkbox"] { width: auto; accent-color: var(--moss); }
+
+    .mapLayout {
+      display: grid; grid-template-columns: 400px 1fr; gap: 16px; align-items: stretch;
+    }
+    .map-wrap { position: relative; }
+    #map {
+      height: 560px; border-radius: var(--radius);
+      border: 1px solid var(--border); overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ── MAP LEGEND ── */
+    .map-legend {
+      position: absolute; bottom: 14px; left: 14px; z-index: 400;
+      background: rgba(255,254,251,.92); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;
+      pointer-events: none;
+    }
+    .leg { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--earth); }
+    .leg-dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .leg-dot.green { background: #4A7A5C; }
+
+    /* ── LIST ── */
+    .list {
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 560px; overflow: auto; padding-right: 4px;
+    }
+    .list::-webkit-scrollbar { width: 4px; }
+    .list::-webkit-scrollbar-track { background: transparent; }
+    .list::-webkit-scrollbar-thumb { background: var(--sand-dark); border-radius: 99px; }
+
+    /* ── VOLUNTEER CARD ── */
+    .vol-card {
+      border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+      background: var(--warm-white); transition: box-shadow .15s, border-color .15s;
+    }
+    .vol-card:hover { box-shadow: var(--shadow-warm); border-color: var(--sand-dark); }
+
+    .vol-card .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .vol-name { font-weight: 700; font-size: 15px; color: var(--earth); }
+    .vol-location { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .vol-tag {
+      font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      padding: 4px 10px; border-radius: 999px; border: 1px solid;
+      white-space: nowrap; flex-shrink: 0;
+      background: var(--moss-light); border-color: #A3D4B0; color: var(--moss-dark);
+    }
+
+    .vol-section { margin-top: 10px; }
+    .vol-section-label {
+      display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      color: var(--earth-light); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .vol-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .vol-chip {
+      background: var(--moss-light); border: 1px solid #A3D4B0;
+      color: var(--moss-dark); font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+    }
+
+    .vol-note {
+      margin-top: 8px; font-size: 13px; color: var(--text-muted);
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 8px 12px; line-height: 1.5;
+    }
+
+    .vol-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .vol-actions a { text-decoration: none; }
+    .vol-id { font-size: 11px; color: var(--sand-dark); margin-top: 8px; }
+
+    .pill {
+      border: 1.5px solid var(--sand-dark); padding: 7px 12px;
+      border-radius: var(--radius-sm); background: var(--warm-white);
+      font-weight: 600; font-size: 12px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; color: var(--earth); transition: all .12s;
+    }
+    .pill:hover { border-color: var(--moss); color: var(--moss-dark); background: var(--moss-light); }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--border); padding: 28px 0; background: var(--warm-white); }
+    footer .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; font-family: 'Lora', serif; font-weight: 700; font-size: 16px; color: var(--clay-dark); }
+    .footer-text { font-size: 13px; color: var(--text-muted); }
+
+    /* ── MISC ── */
+    #lastSync { font-size: 12px; color: var(--text-muted); }
+
+    /* ── MOBILE TOGGLE ── */
+    .mobile-toggle { display: none; gap: 10px; margin: 12px 0 0; }
+    .mobile-toggle .btn { flex: 1; justify-content: center; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 980px) {
+      .mobile-toggle { display: flex; }
+      body[data-mobile-view="list"] #panelMap  { display: none; }
+      body[data-mobile-view="map"]  #panelList { display: none; }
+      .hero-inner { grid-template-columns: 1fr; }
+      h1 { font-size: 30px; }
+      .mapLayout { grid-template-columns: 1fr; }
+      #map { height: 420px; }
+      .list { max-height: none; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+      .links { display: none; }
+      section { padding: 28px 0; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="nav">
+    <div class="logo">
+      <div class="logo-heart">🤝</div>
+      AjudaJF
+    </div>
+    <nav class="links">
+      <a href="ajudajf-v2.html">Pedidos de ajuda</a>
+      <a href="ajudajf-v2.html#mapa">Mapa</a>
+      <a href="ajudajf-v2.html#pontos">Pontos de doação</a>
+      <a href="#cadastro" class="active">🙋 Voluntários</a>
+    </nav>
+    <div style="display:flex;gap:8px">
+      <a href="ajudajf-v2.html" class="btn secondary">🙏 Preciso de ajuda</a>
+      <button class="btn" onclick="document.querySelector('#mapa-vol').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO ── -->
+<div class="hero-section">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">
+        <div class="pulse-dot"></div>
+        Voluntários ativos em JF
+      </div>
+      <h1>Seja um <em>voluntário</em> e transforme vidas em Juiz de Fora</h1>
+      <p class="hero-desc">Cadastre-se como voluntário, informe o que pode ajudar e sua localização. Quem precisa de apoio encontra você pelo mapa.</p>
+      <div class="hero-actions">
+        <button class="btn primary" onclick="document.querySelector('#cadastro').scrollIntoView({behavior:'smooth'})">🙋 Quero ser voluntário</button>
+        <button class="btn" onclick="document.querySelector('#mapa-vol').scrollIntoView({behavior:'smooth'})">🗺 Ver voluntários no mapa</button>
+        <button class="btn" onclick="refreshAll(true)">↻ Atualizar</button>
+      </div>
+      <div class="notice-box">
+        ✅ Seu telefone será visível para que as pessoas possam entrar em contato. Cadastre-se apenas se estiver realmente disponível para ajudar.
+      </div>
+    </div>
+
+    <div class="side-card">
+      <h2>Como funciona</h2>
+      <p style="font-size:14px;color:var(--text-muted)">Voluntários cadastrados aparecem no mapa com o que podem oferecer e como contatar.</p>
+      <div class="divider"></div>
+      <div class="stats">
+        <div class="stat-row"><div class="stat-icon green">🙋</div> Voluntários no mapa por região</div>
+        <div class="stat-row"><div class="stat-icon orange">🛠</div> Filtre por tipo de ajuda disponível</div>
+        <div class="stat-row"><div class="stat-icon blue">💬</div> Contato direto pelo WhatsApp</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ── CADASTRO ── -->
+  <section id="cadastro">
+    <div class="section-header">
+      <div class="section-icon green">🙋</div>
+      <div class="section-title-block">
+        <h2>Cadastrar-se como voluntário</h2>
+        <p>Preencha o formulário — você aparece no mapa assim que aprovado.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <form id="formVolunteer" target="hidden_iframe_vol" method="POST">
+        <input type="hidden" name="action" value="createVolunteer">
+        <input type="hidden" name="id" id="vol_id">
+        <input type="hidden" name="lat" id="vol_lat">
+        <input type="hidden" name="lng" id="vol_lng">
+        <input type="hidden" name="location_precision" id="vol_precision" value="manual">
+        <!-- honeypot -->
+        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="grid2">
+          <div>
+            <label>Nome completo <span style="color:var(--moss)">*</span></label>
+            <input name="name" required placeholder="Ex.: Carlos Silva">
+          </div>
+          <div>
+            <label>Telefone / WhatsApp <span style="color:var(--moss)">*</span></label>
+            <input name="phone" required placeholder="(32) 9xxxx-xxxx" inputmode="tel">
+            <div class="field-hint">Só números. Ex.: 32999999999</div>
+          </div>
+        </div>
+
+        <label>O que você pode ajudar? <span style="color:var(--moss)">*</span> — selecione um ou mais</label>
+        <div class="chips" id="skillsChips"></div>
+        <input type="hidden" name="skills" id="skillsValue">
+
+        <div class="grid2" style="margin-top:4px">
+          <div>
+            <label>Observações <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+            <textarea name="notes" placeholder="Ex.: Tenho carro e posso fazer entregas até as 20h, moro no Centro..."></textarea>
+          </div>
+          <div>
+            <label>Disponibilidade</label>
+            <select name="availability">
+              <option value="disponivel">Disponível agora</option>
+              <option value="hoje">Somente hoje</option>
+              <option value="semana">Esta semana</option>
+              <option value="fds">Finais de semana</option>
+            </select>
+
+            <div class="divider"></div>
+
+            <label>Bairro <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+            <input name="neighborhood" placeholder="Ex.: Centro">
+
+            <label>Endereço / Ponto de referência <span style="color:var(--moss)">*</span></label>
+            <input name="address" id="vol_address" required placeholder="Rua, número, bairro — Juiz de Fora/MG">
+
+            <label class="geo-checkbox-label" style="margin-top:10px;flex-direction:row;align-items:center;gap:8px;display:flex;cursor:pointer;font-weight:500;color:var(--text-muted)">
+              <input type="checkbox" id="useGeoVol" style="width:auto;accent-color:var(--moss)">
+              Usar minha localização atual
+            </label>
+            <div class="small-text" id="geoVolStatus" style="margin-top:4px;min-height:16px"></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:20px">
+          <button class="btn primary" type="submit" id="btnSendVol">Cadastrar como voluntário</button>
+          <button class="btn" type="button" onclick="document.querySelector('#mapa-vol').scrollIntoView({behavior:'smooth'})">Ver no mapa</button>
+          <span class="small-text" id="volMsg"></span>
+        </div>
+      </form>
+
+      <iframe name="hidden_iframe_vol" id="hidden_iframe_vol" style="display:none"></iframe>
+    </div>
+  </section>
+
+  <!-- ── MAPA ── -->
+  <section id="mapa-vol">
+    <div class="section-header">
+      <div class="section-icon blue">🗺</div>
+      <div class="section-title-block">
+        <h2>Voluntários disponíveis</h2>
+        <p>Filtre por tipo de ajuda e encontre voluntários próximos.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="map-controls">
+        <label>
+          <input type="checkbox" id="autoLoad" checked> Carregar automaticamente
+        </label>
+        <button class="btn" onclick="refreshAll()">↻ Atualizar</button>
+        <span id="lastSync"></span>
+      </div>
+
+      <div class="mobile-toggle">
+        <button class="btn primary" type="button" id="btnViewList" onclick="setMobileView('list')">📋 Lista</button>
+        <button class="btn" type="button" id="btnViewMap"  onclick="setMobileView('map')">🗺 Mapa</button>
+      </div>
+
+      <div class="mapLayout">
+        <div id="panelList">
+          <div class="chips" id="filterChips"></div>
+          <div class="hr"></div>
+          <div class="list" id="list"></div>
+        </div>
+        <div id="panelMap">
+          <div class="map-wrap">
+            <div id="map" aria-label="Mapa de voluntários"></div>
+            <div class="map-legend">
+              <span class="leg"><span class="leg-dot green"></span> Voluntários disponíveis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="wrap">
+    <div class="footer-brand">
+      <div class="logo-heart">🤝</div>
+      AjudaJF
+    </div>
+    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Dados via Google Sheets • Use com responsabilidade.</p>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <a href="ajudajf-v2.html" style="font-size:13px;color:var(--clay-dark);font-weight:600;text-decoration:underline">← Página principal</a>
+      <div class="small-text">Desenvolvido por <a href="https://www.linkedin.com/in/jonathan-coelho-06a91014b/" target="_blank" rel="noopener" style="text-decoration:underline">Jonathan Coelho</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* =====================================================
+     CONFIG
+  ===================================================== */
+  const WEB_APP_URL = "WEB_APP_URL_AQUI"; // mesma URL do Apps Script
+
+  /* =====================================================
+     CONSTANTES
+  ===================================================== */
+  const SKILLS = [
+    { key: "transporte",   label: "🚗 Transporte" },
+    { key: "alimentos",    label: "🥫 Doação de alimentos" },
+    { key: "agua",         label: "💧 Doação de água" },
+    { key: "roupas",       label: "👕 Doação de roupas" },
+    { key: "higiene",      label: "🧴 Higiene / Limpeza" },
+    { key: "abrigo",       label: "🏠 Abrigo temporário" },
+    { key: "saude",        label: "🏥 Saúde / Primeiros socorros" },
+    { key: "psicologico",  label: "🤝 Apoio emocional" },
+    { key: "construcao",   label: "🔧 Construção / Reparo" },
+    { key: "pets",         label: "🐾 Acolhimento de pets" },
+    { key: "financeiro",   label: "💰 Ajuda financeira" },
+    { key: "outros",       label: "➕ Outros" }
+  ];
+
+  const SKILLS_LABEL = Object.fromEntries(SKILLS.map(s => [s.key, s.label]));
+
+  const AVAIL_LABEL = {
+    disponivel: "Disponível agora",
+    hoje:       "Somente hoje",
+    semana:     "Esta semana",
+    fds:        "Finais de semana"
+  };
+
+  const AUTO_LOAD_KEY   = "ajudajf_autoload_vol";
+  const GEO_CACHE_KEY   = "ajudajf_geocache_v1";
+  const AUTO_REFRESH_MS = 5 * 60 * 1000;
+
+  /* =====================================================
+     STATE
+  ===================================================== */
+  let selectedSkills    = new Set();
+  let activeSkillFilter = null;
+  let volunteers        = [];
+  let map, layerVol;
+  let lastSubmitted     = null;
+
+  /* =====================================================
+     HELPERS
+  ===================================================== */
+  const $        = (s) => document.querySelector(s);
+  const uid      = () => crypto.randomUUID ? crypto.randomUUID() : "id-" + Math.random().toString(16).slice(2) + Date.now();
+  const round3   = (n) => Math.round(n * 1000) / 1000;
+  const phoneDigits = (v) => String(v || "").replace(/\D/g, "");
+  const escapeHtml  = (s) => String(s || "").replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])
+  );
+
+  function copyText(t) {
+    navigator.clipboard?.writeText(t).then(() => alert("Copiado ✅")).catch(() => prompt("Copie:", t));
+  }
+
+  function setLastSync() {
+    const el = $("#lastSync");
+    if (el) el.textContent = "Atualizado: " + new Date().toLocaleTimeString();
+  }
+
+  /* =====================================================
+     GEOCODING
+  ===================================================== */
+  function getGeoCache() {
+    try { return JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || "{}"); } catch { return {}; }
+  }
+  function saveGeoCache(c) {
+    try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(c)); } catch {}
+  }
+
+  async function geocodeAddress(query) {
+    const q = String(query || "").trim();
+    if (!q) throw new Error("Informe o endereço.");
+    const cache = getGeoCache();
+    if (cache[q]) return cache[q];
+    const full = /juiz\s*de\s*fora/i.test(q) ? q : q + ", Juiz de Fora, MG, Brasil";
+    const url  = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(full);
+    const resp = await fetch(url, { headers: { "Accept-Language": "pt-BR" } });
+    if (!resp.ok) throw new Error("Falha ao localizar endereço.");
+    const data = await resp.json();
+    if (!Array.isArray(data) || data.length === 0)
+      throw new Error("Endereço não encontrado. Tente incluir número e bairro.");
+    const lat = Number(data[0].lat), lng = Number(data[0].lon);
+    if (isNaN(lat) || isNaN(lng)) throw new Error("Endereço inválido.");
+    const result = { lat, lng };
+    cache[q] = result;
+    saveGeoCache(cache);
+    return result;
+  }
+
+  /* =====================================================
+     JSONP
+  ===================================================== */
+  function jsonp(url) {
+    return new Promise((resolve, reject) => {
+      const cb = "cb_" + Math.random().toString(36).slice(2);
+      window[cb] = (data) => { resolve(data); cleanup(); };
+      const s = document.createElement("script");
+      s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+      s.onerror = () => { reject(new Error("Falha ao carregar dados.")); cleanup(); };
+      document.body.appendChild(s);
+      function cleanup() { delete window[cb]; s.remove(); }
+    });
+  }
+
+  /* =====================================================
+     MAP
+  ===================================================== */
+  function initMap() {
+    map = L.map("map", { scrollWheelZoom: true }).setView([-21.7606, -43.3496], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+    layerVol = L.layerGroup().addTo(map);
+  }
+
+  /* =====================================================
+     CHIPS
+  ===================================================== */
+  function buildSkillChips() {
+    // form chips
+    const el = $("#skillsChips");
+    el.innerHTML = "";
+    SKILLS.forEach(s => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = s.label;
+      chip.onclick = () => {
+        selectedSkills.has(s.key) ? selectedSkills.delete(s.key) : selectedSkills.add(s.key);
+        chip.classList.toggle("on");
+        $("#skillsValue").value = [...selectedSkills].join(",");
+      };
+      el.appendChild(chip);
+    });
+
+    // filter chips
+    const f = $("#filterChips");
+    f.innerHTML = "";
+    SKILLS.forEach(s => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = s.label;
+      chip.title = "Filtrar: " + s.label;
+      chip.onclick = () => {
+        activeSkillFilter = (activeSkillFilter === s.key) ? null : s.key;
+        [...f.children].forEach(c => c.classList.remove("on"));
+        if (activeSkillFilter) chip.classList.add("on");
+        renderAll();
+      };
+      f.appendChild(chip);
+    });
+  }
+
+  /* =====================================================
+     RENDER
+  ===================================================== */
+  function renderAll() {
+    const filtered = volunteers.filter(v => {
+      if (activeSkillFilter && !(v.skills || []).includes(activeSkillFilter)) return false;
+      return true;
+    });
+    renderList(filtered);
+    renderMap(filtered);
+  }
+
+  function renderList(filtered) {
+    const list = $("#list");
+    list.innerHTML = "";
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="small-text" style="padding:16px;text-align:center;color:var(--text-muted)">
+        Nenhum voluntário encontrado. Tente remover filtros ou atualizar.</div>`;
+      return;
+    }
+
+    filtered.forEach(v => {
+      const skillChips = (v.skills || [])
+        .map(k => `<span class="vol-chip">${escapeHtml(SKILLS_LABEL[k] || k)}</span>`)
+        .join("");
+      const addrLine = [v.neighborhood, v.address].filter(Boolean).join(" — ") || "Localização informada";
+      const availLabel = AVAIL_LABEL[v.availability] || v.availability || "";
+
+      const div = document.createElement("div");
+      div.className = "vol-card";
+      div.innerHTML = `
+        <div class="top">
+          <div>
+            <div class="vol-name">👤 ${escapeHtml(v.name || "Voluntário")}</div>
+            <div class="vol-location">📍 ${escapeHtml(addrLine)}</div>
+          </div>
+          ${availLabel ? `<div class="vol-tag">${escapeHtml(availLabel)}</div>` : ""}
+        </div>
+
+        ${skillChips ? `
+        <div class="vol-section">
+          <span class="vol-section-label">🛠 Pode ajudar com</span>
+          <div class="vol-chips">${skillChips}</div>
+        </div>` : ""}
+
+        ${v.notes ? `<div class="vol-note">📝 ${escapeHtml(v.notes)}</div>` : ""}
+
+        <div class="vol-actions">
+          <a class="pill" href="https://wa.me/55${escapeHtml(v.phone)}" target="_blank" rel="noopener">💬 WhatsApp</a>
+          <button class="pill" onclick="copyText('${escapeHtml(v.phone)}')">📋 Copiar telefone</button>
+          ${v.lat && v.lng ? `<a class="pill" href="https://www.google.com/maps?q=${v.lat},${v.lng}" target="_blank" rel="noopener">🗺 Ver no mapa</a>` : ""}
+        </div>
+        <div class="vol-id">ID: ${escapeHtml(v.id)}</div>`;
+      list.appendChild(div);
+    });
+  }
+
+  function renderMap(filtered) {
+    layerVol.clearLayers();
+    filtered.forEach(v => {
+      if (typeof v.lat !== "number" || typeof v.lng !== "number") return;
+      const marker = L.circleMarker([v.lat, v.lng], {
+        radius: 9, weight: 2, color: "#4A7A5C", fillColor: "#4A7A5C", fillOpacity: 0.85
+      });
+      const skills = (v.skills || []).map(k => escapeHtml(SKILLS_LABEL[k] || k)).join(", ");
+      marker.bindPopup(`
+        <b>🙋 ${escapeHtml(v.name || "Voluntário")}</b><br>
+        ${skills ? `<span style="color:#4A7A5C">${skills}</span><br>` : ""}
+        <span style="color:#7A6155">📞 ${escapeHtml(v.phone)}</span><br>
+        <a href="https://wa.me/55${escapeHtml(v.phone)}" target="_blank" rel="noopener">Chamar no WhatsApp</a>`);
+      marker.addTo(layerVol);
+    });
+  }
+
+  /* =====================================================
+     FETCH
+  ===================================================== */
+  async function refreshAll(scrollToMap = false) {
+    try {
+      const res = await jsonp(`${WEB_APP_URL}?action=listVolunteers`);
+      if (!res.ok) throw new Error(res.error || "Erro ao carregar voluntários.");
+      volunteers = res.data || [];
+      setLastSync();
+      renderAll();
+      if (scrollToMap) document.querySelector("#mapa-vol").scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      alert("Falha ao atualizar: " + err.message);
+    }
+  }
+
+  /* =====================================================
+     FORMS
+  ===================================================== */
+  function wireForms() {
+    $("#formVolunteer").action = WEB_APP_URL;
+    $("#vol_id").value = uid();
+
+    /* --- checkbox geo voluntário --- */
+    const geoChk    = $("#useGeoVol");
+    const addrInput = $("#vol_address");
+    const geoStatus = $("#geoVolStatus");
+
+    if (geoChk) {
+      geoChk.addEventListener("change", () => {
+        if (!geoChk.checked) {
+          geoStatus.textContent = "";
+          addrInput.readOnly = false;
+          addrInput.value = "";
+          addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+          $("#vol_lat").value = "";
+          $("#vol_lng").value = "";
+          $("#vol_precision").value = "manual";
+          return;
+        }
+        if (!navigator.geolocation) {
+          geoChk.checked = false;
+          geoStatus.textContent = "⚠️ Geolocalização não disponível.";
+          return;
+        }
+        geoStatus.textContent = "📡 Obtendo localização...";
+        addrInput.readOnly = true;
+        addrInput.placeholder = "Aguardando GPS...";
+
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const lat = round3(pos.coords.latitude);
+            const lng = round3(pos.coords.longitude);
+            $("#vol_lat").value = lat;
+            $("#vol_lng").value = lng;
+            $("#vol_precision").value = "gps";
+            geoStatus.textContent = "🔍 Convertendo para endereço...";
+            try {
+              const url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&accept-language=pt-BR";
+              const resp = await fetch(url);
+              const data = await resp.json();
+              const addr = data.address || {};
+              const parts = [
+                addr.road || addr.pedestrian || "",
+                addr.house_number || "",
+                addr.suburb || addr.neighbourhood || "",
+                addr.city || addr.town || "Juiz de Fora"
+              ].filter(Boolean);
+              addrInput.value = parts.join(", ") || data.display_name || "";
+              addrInput.readOnly = false;
+              geoStatus.textContent = "✅ Localização preenchida — edite se necessário.";
+            } catch {
+              addrInput.readOnly = false;
+              addrInput.value = "";
+              addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+              geoStatus.textContent = "✅ GPS capturado. Preencha o endereço manualmente.";
+            }
+          },
+          (err) => {
+            geoChk.checked = false;
+            addrInput.readOnly = false;
+            addrInput.placeholder = "Rua, número, bairro — Juiz de Fora/MG";
+            geoStatus.textContent = "⚠️ " + (err.code === 1 ? "Permissão negada." : "Não foi possível obter localização.");
+            $("#vol_lat").value = "";
+            $("#vol_lng").value = "";
+            $("#vol_precision").value = "manual";
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+
+    /* --- submit voluntário --- */
+    $("#formVolunteer").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msgEl = $("#volMsg");
+      const btnEl = $("#btnSendVol");
+      msgEl.textContent = "Localizando endereço...";
+      btnEl.disabled = true;
+
+      try {
+        const f = $("#formVolunteer");
+        const digits = phoneDigits(f.phone.value);
+        if (digits.length < 10 || digits.length > 13) throw new Error("Telefone inválido.");
+        if (!f.name.value.trim()) throw new Error("Informe seu nome.");
+        if (!$("#skillsValue").value.trim()) throw new Error("Selecione ao menos 1 tipo de ajuda.");
+        if (!f.address.value.trim()) throw new Error("Informe o endereço.");
+
+        f.phone.value = digits;
+
+        // Geocodifica se não tiver GPS
+        if (!$("#vol_lat").value) {
+          const coords = await geocodeAddress(f.address.value.trim());
+          $("#vol_lat").value = round3(coords.lat);
+          $("#vol_lng").value = round3(coords.lng);
+          $("#vol_precision").value = "geocoded";
+        }
+
+        lastSubmitted = "volunteer";
+        msgEl.textContent = "Enviando...";
+        f.submit();
+      } catch (err) {
+        msgEl.textContent = err.message || "Erro ao enviar.";
+        setTimeout(() => { msgEl.textContent = ""; }, 5000);
+      } finally {
+        btnEl.disabled = false;
+      }
+    });
+
+    /* --- pós-POST --- */
+    $("#hidden_iframe_vol").addEventListener("load", () => {
+      if (lastSubmitted === "volunteer") {
+        $("#volMsg").textContent = "Cadastrado ✅ Você aparecerá no mapa em breve!";
+        setTimeout(() => { $("#volMsg").textContent = ""; }, 5000);
+        // reset
+        selectedSkills.clear();
+        [...$("#skillsChips").children].forEach(c => c.classList.remove("on"));
+        $("#skillsValue").value = "";
+        $("#vol_lat").value = "";
+        $("#vol_lng").value = "";
+        $("#vol_precision").value = "manual";
+        $("#vol_id").value = uid();
+        const geoChk = $("#useGeoVol");
+        if (geoChk) geoChk.checked = false;
+        const geoStatus = $("#geoVolStatus");
+        if (geoStatus) geoStatus.textContent = "";
+        const addrInput = $("#vol_address");
+        if (addrInput) { addrInput.readOnly = false; addrInput.value = ""; }
+      }
+      lastSubmitted = null;
+      setTimeout(() => refreshAll(), 700);
+    });
+  }
+
+  /* =====================================================
+     MOBILE TOGGLE
+  ===================================================== */
+  function setMobileView(mode) {
+    document.body.dataset.mobileView = mode;
+    $("#btnViewList")?.classList.toggle("primary",  mode === "list");
+    $("#btnViewMap")?.classList.toggle("primary",  mode === "map");
+    if (mode === "map") setTimeout(() => map?.invalidateSize(), 150);
+  }
+
+  /* =====================================================
+     BOOT
+  ===================================================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.matchMedia("(max-width: 980px)").matches) setMobileView("list");
+    buildSkillChips();
+    initMap();
+    wireForms();
+
+    const autoEl = $("#autoLoad");
+    const autoOn = localStorage.getItem(AUTO_LOAD_KEY) !== "false";
+    if (autoEl) {
+      autoEl.checked = autoOn;
+      autoEl.addEventListener("change", () => {
+        localStorage.setItem(AUTO_LOAD_KEY, autoEl.checked ? "true" : "false");
+        if (autoEl.checked) refreshAll();
+      });
+    }
+    if (autoOn) refreshAll();
+
+    setInterval(() => {
+      const on = localStorage.getItem(AUTO_LOAD_KEY) !== "false";
+      if (on && document.visibilityState === "visible") refreshAll();
+    }, AUTO_REFRESH_MS);
+  });
+</script>
+
+</body>
+</html>
