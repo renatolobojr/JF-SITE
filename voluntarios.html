@@ -352,13 +352,13 @@
       AjudaJF
     </div>
     <nav class="links">
-      <a href="index.html">Pedidos de ajuda</a>
-      <a href="index.html#mapa">Mapa</a>
-      <a href="index.html#pontos">Pontos de doação</a>
+      <a href="pedidos.html">Pedidos de ajuda</a>
+      <a href="pedidos.html#mapa">Mapa</a>
+      <a href="pedidos.html#pontos">Pontos de doação</a>
       <a href="#cadastro" class="active">🙋 Voluntários</a>
     </nav>
     <div style="display:flex;gap:8px">
-      <a href="index.html" class="btn secondary">🙏 Preciso de ajuda</a>
+      <a href="pedidos.html" class="btn secondary">🙏 Preciso de ajuda</a>
       <button class="btn" onclick="document.querySelector('#mapa-vol').scrollIntoView({behavior:'smooth'})">🗺 Ver Mapa</button>
     </div>
   </div>
@@ -491,7 +491,7 @@
         <label>
           <input type="checkbox" id="autoLoad" checked> Carregar automaticamente
         </label>
-        <button class="btn" onclick="refreshAll()">↻ Atualizar</button>
+        <button class="btn" onclick="refreshAll(false, true)">↻ Atualizar</button>
         <span id="lastSync"></span>
       </div>
 
@@ -772,13 +772,35 @@
   /* =====================================================
      FETCH
   ===================================================== */
-  async function refreshAll(scrollToMap = false) {
+  async function refreshAll(scrollToMap = false, forceNetwork = false) {
+    const TTL = 5 * 60 * 1000;
+    const now = Date.now();
+
+    function fromCache(key) {
+      try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (now - obj.ts > TTL) return null;
+        return obj.data;
+      } catch { return null; }
+    }
+
+    const cachedVols = !forceNetwork && fromCache("ajudajf_vols");
+
     try {
-      const res = await jsonp(`${WEB_APP_URL}?action=listVolunteers`);
-      if (!res.ok) throw new Error(res.error || "Erro ao carregar voluntários.");
-      volunteers = res.data || [];
-      setLastSync();
-      renderAll();
+      if (cachedVols) {
+        volunteers = cachedVols;
+        setLastSync();
+        renderAll();
+      } else {
+        const res = await jsonp(`${WEB_APP_URL}?action=listVolunteers`);
+        if (!res.ok) throw new Error(res.error || "Erro ao carregar voluntários.");
+        volunteers = res.data || [];
+        sessionStorage.setItem("ajudajf_vols", JSON.stringify({ ts: now, data: volunteers }));
+        setLastSync();
+        renderAll();
+      }
       if (scrollToMap) document.querySelector("#mapa-vol").scrollIntoView({ behavior: "smooth" });
     } catch (err) {
       alert("Falha ao atualizar: " + err.message);
