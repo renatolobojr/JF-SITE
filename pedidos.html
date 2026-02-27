@@ -1176,12 +1176,17 @@
     window[cb] = (data) => {
       delete window[cb];
       s.remove();
+      console.log("[AjudaJF] publicUpdateRequest resposta:", JSON.stringify(data));
       if (!data || !data.ok) {
+        // Reverte optimistic UI
         if (req) { req.status = "open"; renderAll(); }
         const motivo = (data && data.error) ? data.error : "resposta inesperada do servidor";
         alert("Não foi possível marcar como atendido.\nMotivo: " + motivo);
       } else {
-        setTimeout(() => refreshAll(), 800);
+        // Invalida o cache para garantir que o próximo refresh vem da API
+        sessionStorage.removeItem("ajudajf_requests");
+        // Força busca na rede para refletir o novo status
+        setTimeout(() => refreshAll(false, true), 800);
       }
     };
 
