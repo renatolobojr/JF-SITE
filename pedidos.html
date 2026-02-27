@@ -819,7 +819,8 @@
   let requests        = [];
   let points          = [];
   let map, layerRequests, layerPoints;
-  let lastSubmitted   = null; // 'request' | 'point'
+  let lastSubmitted    = null; // 'request' | 'point'
+  let geoBatchRunning  = false; // evita múltiplos batches simultâneos
 
   /* =====================================================
      HELPERS
@@ -1160,20 +1161,28 @@
   }
 
   // Geocodifica pontos sem coords respeitando o rate-limit do Nominatim (1 req/s)
+  // Só roda um batch por vez; coordenadas resolvidas ficam salvas no objeto p
   async function geocodePointsBatch(items) {
+    if (geoBatchRunning) return; // já tem um batch rodando
+    geoBatchRunning = true;
     for (const { p, addr } of items) {
+      // Se outro renderAll já resolveu as coords deste ponto, plota direto
+      if (typeof p.lat === "number" && typeof p.lng === "number") {
+        addPointMarker(p, p.lat, p.lng);
+        continue;
+      }
       try {
         const coords = await geocodeAddress(addr);
-        // Salva nas coordenadas do objeto em memória para evitar reprocessar
-        p.lat = coords.lat;
+        p.lat = coords.lat; // persiste no objeto para reutilizar nos próximos renderAll
         p.lng = coords.lng;
         addPointMarker(p, coords.lat, coords.lng);
       } catch {
         // Endereço não encontrado — ignora silenciosamente
       }
-      // Pausa de 1.1s entre requisições (Nominatim ToS)
+      // Pausa de 1.1s entre requisições (Nominatim ToS: máximo 1 req/s)
       await new Promise(r => setTimeout(r, 1100));
     }
+    geoBatchRunning = false;
   }
 
   /* =====================================================
