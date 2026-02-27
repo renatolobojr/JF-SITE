@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AjudaJF — Mapa de Áreas de Risco Geológico · JF</title>
+  <meta name="description" content="Mapeamento de Áreas de Risco Geológico e Hidrológico de Juiz de Fora, MG.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --cream:       #FAF7F2;
+      --warm-white:  #FFFEFB;
+      --clay:        #C4714A;
+      --clay-dark:   #A05438;
+      --sand:        #E8DDD0;
+      --sand-dark:   #D4C5B2;
+      --earth:       #6B4F3A;
+      --earth-light: #8C6F5A;
+      --sky:         #2563EB;
+      --sky-mid:     #3B82F6;
+      --sky-light:   #EFF6FF;
+      --sky-dark:    #1D4ED8;
+      --sky-border:  #BFDBFE;
+      --moss:        #4A7A5C;
+      --moss-light:  #EBF5EF;
+      --text:        #2C1F17;
+      --text-muted:  #7A6155;
+      --border:      rgba(196,113,74,.15);
+      --shadow-card: 0 2px 16px rgba(100,60,30,.06), 0 1px 4px rgba(100,60,30,.04);
+      --radius:      20px;
+      --radius-sm:   12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--cream); color: var(--text);
+      display: flex; flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 50; flex-shrink: 0;
+      background: rgba(250,247,242,.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Lora', serif; font-weight: 700;
+      font-size: 22px; color: var(--clay-dark); letter-spacing: -.02em;
+      white-space: nowrap;
+    }
+    .logo-heart {
+      width: 32px; height: 32px; background: var(--clay); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+      flex-shrink: 0;
+    }
+    .links { display: flex; gap: 4px; }
+    .links a {
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      padding: 6px 12px; border-radius: 999px; transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .links a:hover { background: var(--sand); color: var(--clay-dark); }
+    .links a.active { color: var(--sky-dark); font-weight: 700; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 999px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--sand-dark);
+      background: var(--warm-white); color: var(--earth);
+      transition: all .15s; white-space: nowrap; text-decoration: none;
+    }
+    .btn:hover { border-color: var(--clay); color: var(--clay-dark); background: var(--sand); }
+
+    /* ── BANNER INFORMATIVO ── */
+    .banner {
+      background: linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 50%, #2563EB 100%);
+      color: #fff; flex-shrink: 0;
+    }
+    .banner-inner {
+      max-width: 1200px; margin: 0 auto; padding: 28px 20px;
+      display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+    }
+    .banner-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      font-size: 12px; font-weight: 700; letter-spacing: .04em;
+      padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .banner h1 {
+      font-family: 'Lora', serif; font-size: 26px; font-weight: 700;
+      line-height: 1.2; letter-spacing: -.02em; margin-bottom: 8px; color: #fff;
+    }
+    .banner h1 em { font-style: italic; color: #93C5FD; }
+    .banner-desc { font-size: 14px; color: rgba(255,255,255,.75); line-height: 1.5; max-width: 600px; }
+
+    .legend-pills {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+    }
+    .legend-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+      padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    .banner-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .banner-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; white-space: nowrap; transition: all .15s;
+    }
+    .banner-btn.white { background: #fff; color: var(--sky-dark); border: 2px solid #fff; }
+    .banner-btn.white:hover { background: #EFF6FF; }
+    .banner-btn.outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.5); }
+    .banner-btn.outline:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+
+    /* ── AVISO LEGENDA ── */
+    .info-bar {
+      background: #EFF6FF; border-bottom: 1px solid var(--sky-border);
+      padding: 10px 20px; font-size: 13px; color: var(--sky-dark);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .info-bar span { flex: 1; }
+
+    /* ── MAPA EMBED ── */
+    .map-container {
+      flex: 1; display: flex; flex-direction: column;
+      min-height: 0;
+    }
+    .map-toolbar {
+      background: var(--warm-white); border-bottom: 1px solid var(--border);
+      padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .map-toolbar-title {
+      font-family: 'Lora', serif; font-weight: 600; font-size: 15px;
+      color: var(--earth); flex: 1;
+    }
+    .map-toolbar-sub { font-size: 12px; color: var(--text-muted); }
+
+    #risco-map {
+      flex: 1; width: 100%; border: none; min-height: 520px;
+      display: block;
+    }
+
+    /* ── INFO CARDS ABAIXO DO MAPA ── */
+    .info-section {
+      background: var(--warm-white); border-top: 1px solid var(--border);
+      padding: 28px 20px; flex-shrink: 0;
+    }
+    .info-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+    }
+    .info-card {
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 18px;
+    }
+    .info-card-icon { font-size: 26px; margin-bottom: 10px; }
+    .info-card h3 {
+      font-family: 'Lora', serif; font-size: 15px; font-weight: 600;
+      color: var(--earth); margin-bottom: 6px;
+    }
+    .info-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 20px;
+      background: var(--warm-white); flex-shrink: 0;
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-brand {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Lora', serif; font-weight: 700; font-size: 15px; color: var(--clay-dark);
+    }
+    .footer-text { font-size: 12px; color: var(--text-muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .banner-inner { grid-template-columns: 1fr; }
+      .banner-actions { flex-direction: row; align-items: flex-start; }
+      .info-grid { grid-template-columns: 1fr; }
+      .links { display: none; }
+      .banner h1 { font-size: 20px; }
+      #risco-map { min-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="nav">
+    <div class="logo">
+      <div class="logo-heart">🤝</div>
+      AjudaJF
+    </div>
+    <nav class="links">
+      <a href="index.html">🏠 Início</a>
+      <a href="pedidos.html">Pedidos de ajuda</a>
+      <a href="voluntarios.html">Voluntários</a>
+      <a href="vistoria.html">🏚 Vistoria Técnica</a>
+      <a href="riscos.html" class="active">⛰ Áreas de Risco</a>
+    </nav>
+    <a href="index.html" class="btn">🏠 Início</a>
+  </div>
+</header>
+
+<!-- BANNER -->
+<div class="banner">
+  <div class="banner-inner">
+    <div>
+      <div class="banner-badge">⛰ Geologia &amp; Hidrologia</div>
+      <h1>Mapeamento de <em>Áreas de Risco</em><br>Geológico e Hidrológico — JF</h1>
+      <p class="banner-desc">
+        Mapa oficial com as áreas de risco catalogadas em Juiz de Fora, MG. Identifique zonas de deslizamento, erosão e inundação na sua região.
+      </p>
+      <div class="legend-pills">
+        <span class="legend-pill"><span class="legend-dot" style="background:#E53E3E"></span>Risco alto</span>
+        <span class="legend-pill"><span class="legend-dot" style="background:#DD6B20"></span>Risco médio</span>
+        <span class="legend-pill"><span class="legend-dot" style="background:#D69E2E"></span>Risco baixo</span>
+        <span class="legend-pill"><span class="legend-dot" style="background:#3182CE"></span>Risco hidrológico</span>
+      </div>
+    </div>
+    <div class="banner-actions">
+      <a href="https://www.google.com/maps/d/u/0/viewer?mid=1WONsDYluWx8kJKU5kl5G3fLEdS6u6z0&shorturl=1" target="_blank" rel="noopener" class="banner-btn white">
+        ↗ Abrir no Google Maps
+      </a>
+      <a href="vistoria.html" class="banner-btn outline">
+        🏚 Solicitar vistoria
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- INFO BAR -->
+<div class="info-bar">
+  <span>
+    ℹ️ Mapa fornecido pelo <strong>Google My Maps</strong> com dados de mapeamento geológico de Juiz de Fora. Use como referência — em caso de risco iminente, acione a <strong>Defesa Civil (199)</strong>.
+  </span>
+  <a href="https://www.google.com/maps/d/u/0/viewer?mid=1WONsDYluWx8kJKU5kl5G3fLEdS6u6z0&shorturl=1" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--sky-dark);white-space:nowrap;text-decoration:underline">
+    Ver em tela cheia ↗
+  </a>
+</div>
+
+<!-- MAPA -->
+<div class="map-container">
+  <div class="map-toolbar">
+    <div>
+      <div class="map-toolbar-title">⛰ Áreas de Risco Geológico e Hidrológico — Juiz de Fora, MG</div>
+      <div class="map-toolbar-sub">Fonte: mapeamento técnico via Google My Maps</div>
+    </div>
+    <a href="https://www.google.com/maps/d/u/0/viewer?mid=1WONsDYluWx8kJKU5kl5G3fLEdS6u6z0&shorturl=1" target="_blank" rel="noopener" class="btn" style="font-size:12px">↗ Expandir</a>
+  </div>
+
+  <iframe
+    id="risco-map"
+    src="https://www.google.com/maps/d/u/0/embed?mid=1WONsDYluWx8kJKU5kl5G3fLEdS6u6z0&ll=-21.744069329844923%2C-43.33788069124167&z=14"
+    allowfullscreen
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    title="Mapeamento de Áreas de Risco Geológico e Hidrológico — Juiz de Fora, MG"
+  ></iframe>
+</div>
+
+<!-- INFO CARDS -->
+<div class="info-section">
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-icon">⛰</div>
+      <h3>Risco Geológico</h3>
+      <p>Áreas sujeitas a deslizamentos, queda de blocos e movimentos de massa. Evite esses locais durante e após períodos de chuva intensa.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🌊</div>
+      <h3>Risco Hidrológico</h3>
+      <p>Zonas de inundação, alagamento e enxurradas associadas a cursos d'água. Atenção especial às margens de rios e córregos.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">📞</div>
+      <h3>Em caso de emergência</h3>
+      <p>
+        <strong>Defesa Civil:</strong> 199<br>
+        <strong>Bombeiros:</strong> 193<br>
+        <strong>SAMU:</strong> 192<br>
+        <strong>Prefeitura JF:</strong> (32) 3690-7000
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo-heart">🤝</div>
+      AjudaJF
+    </div>
+    <p class="footer-text">Solidariedade com as famílias de Juiz de Fora • Use com responsabilidade</p>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <a href="vistoria.html" style="font-size:13px;color:var(--clay);font-weight:600;text-decoration:underline">🏚 Solicitar vistoria técnica</a>
+      <div class="footer-text">Desenvolvido por <a href="https://www.linkedin.com/in/jonathan-coelho-06a91014b/" target="_blank" rel="noopener" style="text-decoration:underline">Jonathan Coelho</a></div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

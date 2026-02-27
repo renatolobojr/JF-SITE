@@ -142,7 +142,13 @@
       transition: transform .15s, color .15s;
     }
     .link-card:hover .card-arrow { transform: translateX(3px); color: var(--clay); }
-    .link-card.moss:hover .card-arrow { color: var(--moss); }
+    .link-card.moss:hover  .card-arrow { color: var(--moss); }
+    .link-card.danger:hover .card-arrow { color: var(--danger); }
+    .link-card.sky:hover   .card-arrow { color: var(--sky-dark); }
+    .link-card.danger { border-left: 4px solid var(--danger); }
+    .link-card.sky    { border-left: 4px solid #2563EB; }
+    .card-icon.red    { background: var(--danger-bg); }
+    .card-icon.blue   { background: #EFF6FF; }
 
     /* ── CONTADOR ── */
     .counter-row {
@@ -243,6 +249,10 @@
       <span class="counter-num loading" id="cntVols">…</span>
       <div class="counter-label">Voluntários</div>
     </div>
+    <div class="counter-pill">
+      <span class="counter-num loading" id="cntVis">…</span>
+      <div class="counter-label">Vistorias abertas</div>
+    </div>
   </div>
 
   <!-- Páginas do AjudaJF -->
@@ -263,6 +273,24 @@
       <div class="card-text">
         <div class="card-title">Voluntários</div>
         <div class="card-desc">Cadastre-se ou encontre voluntários disponíveis na sua região</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="vistoria.html" class="link-card danger">
+      <div class="card-icon red">🏚</div>
+      <div class="card-text">
+        <div class="card-title">Vistoria Técnica</div>
+        <div class="card-desc">Imóvel danificado? Solicite visita de técnico, engenheiro ou Defesa Civil</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="riscos.html" class="link-card sky">
+      <div class="card-icon blue">⛰</div>
+      <div class="card-text">
+        <div class="card-title">Áreas de Risco Geológico</div>
+        <div class="card-desc">Mapa oficial de risco geológico e hidrológico de Juiz de Fora</div>
       </div>
       <span class="card-arrow">›</span>
     </a>
@@ -349,19 +377,19 @@
   ===================================================== */
   async function prefetchAll() {
     try {
-      const [a, b, c] = await Promise.all([
+      const [a, b, c, d] = await Promise.all([
         jsonp(WEB_APP_URL + "?action=listRequests"),
         jsonp(WEB_APP_URL + "?action=listPoints"),
-        jsonp(WEB_APP_URL + "?action=listVolunteers")
+        jsonp(WEB_APP_URL + "?action=listVolunteers"),
+        jsonp(WEB_APP_URL + "?action=listVistorias")
       ]);
 
-      // Salva no sessionStorage com timestamp
       const ts = Date.now();
-      if (a.ok) sessionStorage.setItem("ajudajf_requests", JSON.stringify({ ts, data: a.data }));
-      if (b.ok) sessionStorage.setItem("ajudajf_points",   JSON.stringify({ ts, data: b.data }));
-      if (c.ok) sessionStorage.setItem("ajudajf_vols",     JSON.stringify({ ts, data: c.data }));
+      if (a.ok) sessionStorage.setItem("ajudajf_requests",  JSON.stringify({ ts, data: a.data }));
+      if (b.ok) sessionStorage.setItem("ajudajf_points",    JSON.stringify({ ts, data: b.data }));
+      if (c.ok) sessionStorage.setItem("ajudajf_vols",      JSON.stringify({ ts, data: c.data }));
+      if (d.ok) sessionStorage.setItem("ajudajf_vistorias", JSON.stringify({ ts, data: d.data }));
 
-      // Atualiza contadores na tela
       if (a.ok) {
         const open = (a.data || []).filter(r => r.status === "open").length;
         document.getElementById("cntRequests").textContent = open;
@@ -374,6 +402,11 @@
       if (c.ok) {
         document.getElementById("cntVols").textContent = (c.data || []).length;
         document.getElementById("cntVols").classList.remove("loading");
+      }
+      if (d.ok) {
+        const pending = (d.data || []).filter(v => v.status === "pending").length;
+        document.getElementById("cntVis").textContent = pending;
+        document.getElementById("cntVis").classList.remove("loading");
       }
     } catch {
       // falha silenciosa — contadores ficam como "…"
