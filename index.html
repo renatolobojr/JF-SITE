@@ -217,10 +217,109 @@
       font-size: 13px; font-weight: 600; color: var(--earth);
       margin-bottom: 16px;
     }
+
+    /* ══════════════════════════════════════════════════
+       SPLASH SCREEN
+    ══════════════════════════════════════════════════ */
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(160deg, #FAF7F2 0%, #F0E8DF 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0;
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+    #splash.hidden {
+      opacity: 0; visibility: hidden; pointer-events: none;
+    }
+
+    /* Logo pulsante */
+    .splash-logo {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--clay) 0%, var(--clay-dark) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      box-shadow: 0 8px 40px rgba(196,113,74,.4);
+      animation: splashPop .6s cubic-bezier(.34,1.56,.64,1) both,
+                 splashFloat 3s ease-in-out 0.6s infinite;
+      margin-bottom: 28px;
+    }
+    @keyframes splashPop {
+      from { opacity: 0; transform: scale(.4); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes splashFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* Nome */
+    .splash-title {
+      font-family: 'Lora', serif; font-weight: 700;
+      font-size: 32px; letter-spacing: -.02em;
+      color: var(--earth); margin-bottom: 4px;
+      animation: splashFade .5s ease .3s both;
+    }
+    .splash-title em { color: var(--clay); font-style: italic; }
+
+    .splash-sub {
+      font-size: 13px; color: var(--text-muted);
+      animation: splashFade .5s ease .45s both;
+      margin-bottom: 48px;
+    }
+    @keyframes splashFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Barra de progresso */
+    .splash-bar-wrap {
+      width: 200px; height: 3px;
+      background: var(--sand); border-radius: 99px; overflow: hidden;
+      animation: splashFade .4s ease .6s both;
+    }
+    .splash-bar {
+      height: 100%; width: 0%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--clay-light), var(--clay-dark));
+      transition: width .35s ease;
+    }
+
+    .splash-status {
+      font-size: 11px; color: var(--text-muted); margin-top: 12px;
+      letter-spacing: .04em; min-height: 16px;
+      animation: splashFade .4s ease .7s both;
+    }
+
+    /* Pontinhos de loading */
+    .splash-dots span {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--clay-light); margin: 0 3px;
+      animation: dotBounce 1.2s ease-in-out infinite;
+    }
+    .splash-dots span:nth-child(2) { animation-delay: .15s; }
+    .splash-dots span:nth-child(3) { animation-delay: .30s; }
+    @keyframes dotBounce {
+      0%,80%,100% { transform: scale(.6); opacity:.4; }
+      40%          { transform: scale(1);  opacity:1; }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- ══ SPLASH SCREEN ══ -->
+  <div id="splash">
+    <div class="splash-logo">🤝</div>
+    <div class="splash-title">AjudaJF</div>
+    <div class="splash-sub">Central de Solidariedade · Juiz de Fora, MG</div>
+    <div class="splash-bar-wrap">
+      <div class="splash-bar" id="splashBar"></div>
+    </div>
+    <div class="splash-status splash-dots" id="splashStatus">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
 
   <!-- Avatar -->
   <div class="avatar">🤝</div>
@@ -375,6 +474,48 @@
      pedidos.html e voluntarios.html não precisem
      fazer novas requisições ao abrir
   ===================================================== */
+
+  /* =====================================================
+     SPLASH — controla progresso e dispensa a tela
+  ===================================================== */
+  const SPLASH_MAX_MS = 5000; // tempo máximo mesmo sem dados
+
+  const splashEl  = document.getElementById("splash");
+  const barEl     = document.getElementById("splashBar");
+  const statusEl  = document.getElementById("splashStatus");
+
+  let splashDone  = false;
+  let stepsTotal  = 4; // 4 APIs
+  let stepsDone   = 0;
+
+  function splashStep(label) {
+    stepsDone++;
+    const pct = Math.round((stepsDone / stepsTotal) * 100);
+    barEl.style.width = pct + "%";
+    statusEl.className = "splash-status";
+    statusEl.textContent = label;
+    if (stepsDone >= stepsTotal) splashDismiss(300);
+  }
+
+  function splashDismiss(delay = 0) {
+    if (splashDone) return;
+    splashDone = true;
+    setTimeout(() => {
+      splashEl.classList.add("hidden");
+    }, delay);
+  }
+
+  // Timeout de segurança: 5s no máximo
+  setTimeout(() => splashDismiss(), SPLASH_MAX_MS);
+
+  // Barra animada enquanto aguarda (cresce até 80% antes dos dados chegarem)
+  let autoTick = 0;
+  const autoInterval = setInterval(() => {
+    autoTick += 2;
+    if (autoTick >= 78 || splashDone) { clearInterval(autoInterval); return; }
+    barEl.style.width = autoTick + "%";
+  }, 80);
+
   async function prefetchAll() {
     try {
       const [a, b, c, d] = await Promise.all([
@@ -394,23 +535,27 @@
         const open = (a.data || []).filter(r => r.status === "open").length;
         document.getElementById("cntRequests").textContent = open;
         document.getElementById("cntRequests").classList.remove("loading");
+        splashStep("Pedidos carregados ✓");
       }
       if (b.ok) {
         document.getElementById("cntPoints").textContent = (b.data || []).length;
         document.getElementById("cntPoints").classList.remove("loading");
+        splashStep("Pontos de doação carregados ✓");
       }
       if (c.ok) {
         document.getElementById("cntVols").textContent = (c.data || []).length;
         document.getElementById("cntVols").classList.remove("loading");
+        splashStep("Voluntários carregados ✓");
       }
       if (d.ok) {
         const pending = (d.data || []).filter(v => v.status === "pending").length;
         document.getElementById("cntVis").textContent = pending;
         document.getElementById("cntVis").classList.remove("loading");
+        splashStep("Vistorias carregadas ✓");
       }
     } catch {
-      // falha silenciosa — contadores ficam como "…"
-      // as outras páginas carregam normalmente por conta própria
+      // falha silenciosa — splash some pelo timeout de 5s
+      splashDismiss(500);
     }
   }
 
